@@ -6,6 +6,18 @@ using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "CORS",
+    policy =>
+    {
+        policy
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowAnyOrigin();
+    });
+});
+
 var keyVaultName = builder.Configuration["AppConfiguration:KeyVaultName"];
 if (string.IsNullOrWhiteSpace(keyVaultName))
 {
@@ -35,14 +47,13 @@ builder.Services.AddSingleton<IAppConfigurationService>(provider =>
     provider.GetRequiredService<IOptions<AppConfigurationService>>().Value);
 builder.Services.AddSingleton<IAIAssistantService, AIAssistantService>();
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseCors("CORS");
 
 app.UseSwagger();
 app.UseSwaggerUI();
